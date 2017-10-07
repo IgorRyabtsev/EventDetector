@@ -4,9 +4,9 @@ import ya.eventdetector.dbversion.Event;
 import ya.eventdetector.util.Utils;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,7 +34,7 @@ public class SimpleDataBaseImpl {
     public static List<Event> readEventsFromDatabase(String filename) {
         File fileReadFrom = new File(Utils.getCurrentDir() + "/db/" + filename);
         try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(fileReadFrom))) {
-            return (CopyOnWriteArrayList<Event>) objectInputStream.readObject();
+            return (ArrayList<Event>) objectInputStream.readObject();
         } catch (IOException | ClassNotFoundException e) {
             logger.log(Level.FINE, UNABLE_TO_READ + filename);
             logger.log(Level.FINE, Arrays.toString(e.getStackTrace()));

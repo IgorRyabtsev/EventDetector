@@ -3,9 +3,9 @@ package ya.eventdetector.dbversion;
 import ya.eventdetector.EventCounter;
 import ya.eventdetector.dbversion.db.SimpleDataBaseImpl;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import static ya.eventdetector.util.Utils.*;
 
@@ -20,7 +20,7 @@ public class EventCounterImpl implements EventCounter {
     private long leastNumberOfFile;
 
     public EventCounterImpl() {
-        this.events = new CopyOnWriteArrayList<>();
+        this.events = new ArrayList<>();
         eventId = 0;
         fileName = 0;
         filesNumber = 0;
@@ -47,16 +47,18 @@ public class EventCounterImpl implements EventCounter {
 
     //delete unnecessary files in DB. We'll delete files, which has last element, detected more than 1 day before.
     private void clearDataBase(long currentTimeInMillis) {
-        for (long i = leastNumberOfFile; i < filesNumber; ++i) {
-            final CopyOnWriteArrayList<Event> eventsFromDB =
-                    (CopyOnWriteArrayList<Event>) SimpleDataBaseImpl.readEventsFromDatabase(i + DB_EXTENSION);
+        synchronized (this) {
+            for (long i = leastNumberOfFile; i < filesNumber; ++i) {
+                final ArrayList<Event> eventsFromDB =
+                        (ArrayList<Event>) SimpleDataBaseImpl.readEventsFromDatabase(i + DB_EXTENSION);
 
-            if (eventsFromDB.get(eventsFromDB.size() - 1).getTimeInMillis() <= currentTimeInMillis - DAY) {
-                SimpleDataBaseImpl.removeEvents(i + DB_EXTENSION);
-                ++leastNumberOfFile;
-                continue;
+                if (eventsFromDB.get(eventsFromDB.size() - 1).getTimeInMillis() <= currentTimeInMillis - DAY) {
+                    SimpleDataBaseImpl.removeEvents(i + DB_EXTENSION);
+                    ++leastNumberOfFile;
+                    continue;
+                }
+                return;
             }
-            return;
         }
     }
 
@@ -79,24 +81,23 @@ public class EventCounterImpl implements EventCounter {
 
         long allEvents = 0;
         //calculate in-memory array
-        allEvents += events.size() - lowerBound(events, minNecessaryTime);
+        synchronized (this) {
+            allEvents += events.size() - lowerBound(events, minNecessaryTime);
+            //go throw all files
+            for (long i = leastNumberOfFile; i < filesNumber; ++i) {
+                ArrayList<Event> eventsFromDB =
+                        (ArrayList<Event>) SimpleDataBaseImpl.readEventsFromDatabase(i + DB_EXTENSION);
 
-        //go throw all files
-        for (long i = leastNumberOfFile; i < filesNumber; ++i) {
-            CopyOnWriteArrayList<Event> eventsFromDB =
-                    (CopyOnWriteArrayList<Event>) SimpleDataBaseImpl.readEventsFromDatabase(i + DB_EXTENSION);
+                if (eventsFromDB.get(0).getTimeInMillis() >= minNecessaryTime) {
+                    allEvents += eventsFromDB.size();
+                    continue;
+                }
 
-            if (eventsFromDB.get(0).getTimeInMillis() >= minNecessaryTime) {
-                allEvents += eventsFromDB.size();
-                continue;
+                allEvents += lowerBound(eventsFromDB, minNecessaryTime);
             }
 
-            allEvents += lowerBound(eventsFromDB, minNecessaryTime);
+            return allEvents;
         }
-
-        return allEvents;
-
-
     }
 
     //bin search to find necessary time
