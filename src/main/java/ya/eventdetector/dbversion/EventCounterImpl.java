@@ -120,8 +120,10 @@ public class EventCounterImpl implements EventCounter {
 
     //just for testing
     public void addSpecialEvent(final long timeLimit) {
-        long timeInMillis = getCurrentTimeInMillis() - timeLimit;
-        events.add(new Event(eventId, timeInMillis));
-        ++eventId;
+        synchronized (events) {
+            long timeInMillis = getCurrentTimeInMillis() - timeLimit;
+            events.add(new Event(eventId, timeInMillis));
+            ++eventId;
+        }
     }
 }
