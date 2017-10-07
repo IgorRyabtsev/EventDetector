@@ -93,7 +93,7 @@ public class EventCounterTest {
         assertEquals(2, eventCounterImpl.getCountOfEventsPerMinute());
         assertEquals(2, eventCounterImpl.getCountOfEventsPerHour());
         assertEquals(2, eventCounterImpl.getCountOfEventsPerDay());
-        sleep(Utils.MINUTE/1000);
+        sleep(Utils.MINUTE);
         eventCounterImpl.addEvent();
         assertEquals(1, eventCounterImpl.getCountOfEventsPerMinute());
         assertEquals(3, eventCounterImpl.getCountOfEventsPerHour());
