@@ -61,11 +61,13 @@ public class EventCounterImplTree implements EventCounter {
     }
 
     private long getNumberOfEvents(final Node currentRoot, final long timeInMillis) {
-        if (currentRoot == null) {
-            return 0;
+        synchronized (random) {
+            if (currentRoot == null) {
+                return 0;
+            }
+            final long number = (root == null ? 0 : root.height) - findCount(root, timeInMillis);
+            return number;
         }
-        final long number = (root == null ? 0 : root.height) - findCount(root, timeInMillis);
-        return number;
     }
 
     // inserts the node to the tree
@@ -174,7 +176,4 @@ public class EventCounterImplTree implements EventCounter {
         }
     }
 
-    public long getCountOfAllEvents() {
-        return getNumberOfEvents(root, 0);
-    }
 }
