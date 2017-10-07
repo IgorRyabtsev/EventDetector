@@ -8,7 +8,7 @@ import java.util.Random;
 import static ya.eventdetector.util.Utils.*;
 
 
-// I decide to use decart balanced tree(treap) to make all operations for O(logn) but altho we can use AVL tree
+// I decide to use decart balanced tree(treap) to make all operations for O(logn) but although we can use AVL tree
 public class EventCounterImplTree implements EventCounter {
 
     private final Random random;
