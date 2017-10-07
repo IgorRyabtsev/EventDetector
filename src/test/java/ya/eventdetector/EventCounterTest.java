@@ -4,21 +4,21 @@ import org.junit.Before;
 import org.junit.Test;
 import ya.eventdetector.dbversion.EventCounterImpl;
 import ya.eventdetector.treeversion.EventCounterImplTree;
+import ya.eventdetector.util.Utils;
 
 import static java.lang.Thread.sleep;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class EventCounterTest {
-    private EventCounterImplTree eventCounter;
-    private EventCounterImpl eventCounterImpl;
-
     private final static int NUMBER_OF_CYCLES = 500000;
     private final static int NUMBER_OF_CYCLES_WITH_DB = 100000;
     private final static int BIG_NUMBER = 10000000;
     private final static int BIG_NUMBER_WITH_DB = 1000001;
     private final static String HOUR = "HOUR";
     private final static String DAY = "DAY";
+    private EventCounterImplTree eventCounter;
+    private EventCounterImpl eventCounterImpl;
 
     @Before
     public void init() {
@@ -87,6 +87,33 @@ public class EventCounterTest {
     }
 
     @Test
+    public void testDifferentEventsWithDB() throws InterruptedException {
+        eventCounterImpl.addEvent();
+        eventCounterImpl.addEvent();
+        assertEquals(2, eventCounterImpl.getCountOfEventsPerMinute());
+        assertEquals(2, eventCounterImpl.getCountOfEventsPerHour());
+        assertEquals(2, eventCounterImpl.getCountOfEventsPerDay());
+        sleep(Utils.MINUTE/1000);
+        eventCounterImpl.addEvent();
+        assertEquals(1, eventCounterImpl.getCountOfEventsPerMinute());
+        assertEquals(3, eventCounterImpl.getCountOfEventsPerHour());
+        assertEquals(3, eventCounterImpl.getCountOfEventsPerDay());
+    }
+
+    @Test
+    public void testEventsWithDBTestBS() throws InterruptedException {
+        eventCounterImpl.addSpecialEvent(Utils.DAY);
+        eventCounterImpl.addSpecialEvent(Utils.DAY);
+        eventCounterImpl.addSpecialEvent(Utils.DAY);
+        eventCounterImpl.addSpecialEvent(Utils.HOUR);
+        eventCounterImpl.addSpecialEvent(Utils.HOUR);
+        eventCounterImpl.addEvent();
+        assertEquals(1, eventCounterImpl.getCountOfEventsPerMinute());
+        assertTrue(eventCounterImpl.getCountOfEventsPerHour() <= 3 && eventCounterImpl.getCountOfEventsPerHour() >= 1);
+        assertTrue(eventCounterImpl.getCountOfEventsPerDay() <= 6 && eventCounterImpl.getCountOfEventsPerDay() >= 3);
+    }
+
+    @Test
     public void testSmallStress() {
         for (int i = 0; i < BIG_NUMBER; i++) {
             eventCounter.addEvent();
@@ -105,10 +132,10 @@ public class EventCounterTest {
 
     @Test
     public void testBigStress() {
-        for (int i = 0; i < BIG_NUMBER*3; i++) {
+        for (int i = 0; i < BIG_NUMBER * 3; i++) {
             eventCounter.addEvent();
         }
-        assertEquals(BIG_NUMBER*3, eventCounter.getCountOfEventsPerHour());
-        assertEquals(BIG_NUMBER*3, eventCounter.getCountOfEventsPerDay());
+        assertEquals(BIG_NUMBER * 3, eventCounter.getCountOfEventsPerHour());
+        assertEquals(BIG_NUMBER * 3, eventCounter.getCountOfEventsPerDay());
     }
 }
