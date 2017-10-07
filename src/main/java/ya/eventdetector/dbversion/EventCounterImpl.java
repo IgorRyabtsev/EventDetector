@@ -29,7 +29,7 @@ public class EventCounterImpl implements EventCounter {
 
     @Override
     public void addEvent() {
-        synchronized (this) {
+        synchronized (events) {
             final long currentTimeInMillis = getCurrentTimeInMillis();
             if (eventId != 0 && eventId % DATABASE_CLEAR_PERIOD == 0) {
                 clearDataBase(currentTimeInMillis);
@@ -47,7 +47,7 @@ public class EventCounterImpl implements EventCounter {
 
     //delete unnecessary files in DB. We'll delete files, which has last element, detected more than 1 day before.
     private void clearDataBase(long currentTimeInMillis) {
-        synchronized (this) {
+        synchronized (events) {
             for (long i = leastNumberOfFile; i < filesNumber; ++i) {
                 final ArrayList<Event> eventsFromDB =
                         (ArrayList<Event>) SimpleDataBaseImpl.readEventsFromDatabase(i + DB_EXTENSION);
@@ -81,7 +81,7 @@ public class EventCounterImpl implements EventCounter {
 
         long allEvents = 0;
         //calculate in-memory array
-        synchronized (this) {
+        synchronized (events) {
             allEvents += events.size() - lowerBound(events, minNecessaryTime);
             //go throw all files
             for (long i = leastNumberOfFile; i < filesNumber; ++i) {
