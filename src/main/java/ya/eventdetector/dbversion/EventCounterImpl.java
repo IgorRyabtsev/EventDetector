@@ -52,7 +52,7 @@ public class EventCounterImpl implements EventCounter {
                 final ArrayList<Event> eventsFromDB =
                         (ArrayList<Event>) SimpleDataBaseImpl.readEventsFromDatabase(i + DB_EXTENSION);
 
-                if (eventsFromDB.get(eventsFromDB.size() - 1).getTimeInMillis() <= currentTimeInMillis - DAY) {
+                if (eventsFromDB.get(eventsFromDB.size() - 1).getTimeInMillis() < currentTimeInMillis - DAY) {
                     SimpleDataBaseImpl.removeEvents(i + DB_EXTENSION);
                     ++leastNumberOfFile;
                     continue;
