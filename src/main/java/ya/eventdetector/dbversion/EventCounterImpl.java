@@ -117,4 +117,11 @@ public class EventCounterImpl implements EventCounter {
         final Calendar data = Calendar.getInstance();
         return data.getTimeInMillis();
     }
+
+    //just for testing
+    public void addSpecialEvent(final long timeLimit) {
+        long timeInMillis = getCurrentTimeInMillis() - timeLimit;
+        events.add(new Event(eventId, timeInMillis));
+        ++eventId;
+    }
 }
